@@ -1,4 +1,33 @@
+# FFmpeg binary
 ffmpeg/
+
+# Large data files - never push these
+data/raw_videos/
+data/audio/
+data/transcripts/
+data/temp/
+data/outputs/
+data/segments/
+
+# Models
+models/
+
+# Python cache
 __pycache__/
 *.pyc
+*.pyo
+.pytest_cache/
+
+# Env
 .env
+*.env
+
+# VS Code
+.vscode/
+
+# Jupyter
+notebooks/.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db

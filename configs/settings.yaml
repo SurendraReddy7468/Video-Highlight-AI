@@ -1,0 +1,23 @@
+mode: shorts
+
+scoring_weights:
+  podcast:
+    audio: 0.45
+    text: 0.45
+    video: 0.10
+  normal:
+    audio: 0.30
+    text: 0.30
+    video: 0.40
+
+segment:
+  min_duration: 3.0
+  max_duration: 15.0
+
+shorts:
+  target_duration: 30
+  max_duration: 60
+
+highlights:
+  target_duration: 90
+  max_duration: 180

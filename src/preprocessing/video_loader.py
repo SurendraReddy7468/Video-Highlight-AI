@@ -1,52 +1,85 @@
-import yt_dlp
 import os
+import subprocess
+
+def load_from_local(video_path: str) -> str:
+    """Validate and return path to a local video file."""
+    if not os.path.exists(video_path):
+        raise FileNotFoundError(f"[VideoLoader] ❌ File not found: {video_path}")
+    print(f"[VideoLoader] ✅ Local file found: {video_path}")
+    return video_path
 
 
-def load_video(input_source, output_path="data/raw_videos"):
-    print(f"\n📥 Input source: {input_source}")
+def load_from_youtube(url: str, output_dir: str = "data/raw_videos") -> str:
+    """Download a YouTube video using yt-dlp."""
+    os.makedirs(output_dir, exist_ok=True)
+    output_template = os.path.join(output_dir, "%(title)s.%(ext)s")
 
-    if input_source.startswith("http"):
-        print("🌐 Detected URL → Downloading video...")
-        return download_youtube_video(input_source, output_path)
+    print(f"[VideoLoader] ⬇️  Downloading: {url}")
+
+    # Download the video
+    result = subprocess.run(
+        [
+            "yt-dlp",
+            "-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]",
+            "--merge-output-format", "mp4",
+            "-o", output_template,
+            url,
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    if result.returncode != 0:
+        raise RuntimeError(f"[VideoLoader] ❌ yt-dlp failed:\n{result.stderr}")
+
+    # Ask yt-dlp what filename it would produce (without downloading again)
+    filename_result = subprocess.run(
+        ["yt-dlp", "--get-filename", "-o", output_template, url],
+        capture_output=True,
+        text=True,
+    )
+    downloaded_path = filename_result.stdout.strip()
+
+    # yt-dlp may add .mp4 even if the template says otherwise
+    if not os.path.exists(downloaded_path):
+        # fallback: grab the most recently modified mp4 in output_dir
+        mp4s = sorted(
+            [os.path.join(output_dir, f) for f in os.listdir(output_dir) if f.endswith(".mp4")],
+            key=os.path.getmtime,
+            reverse=True,
+        )
+        if not mp4s:
+            raise FileNotFoundError("[VideoLoader] ❌ Download finished but no .mp4 found.")
+        downloaded_path = mp4s[0]
+
+    print(f"[VideoLoader] ✅ Downloaded: {downloaded_path}")
+    return downloaded_path
+
+
+def load_video(source: str, output_dir: str = "data/raw_videos") -> str:
+    """
+    Auto-detect whether source is a YouTube URL or a local file path.
+
+    Args:
+        source: YouTube URL (http/https) or local file path
+        output_dir: Where to save downloaded videos
+
+    Returns:
+        Absolute or relative path to the video file
+    """
+    if source.startswith("http://") or source.startswith("https://"):
+        return load_from_youtube(source, output_dir)
     else:
-        print("📁 Detected local file → Using existing video...")
-        return load_local_video(input_source)
+        return load_from_local(source)
 
 
-def download_youtube_video(url, output_path):
-    os.makedirs(output_path, exist_ok=True)
+# ── Quick test ────────────────────────────────────────────────────────────────
+if __name__ == "__main__":
+    import sys
 
-    ydl_opts = {
-        'outtmpl': os.path.join(output_path, '%(id)s.%(ext)s'),
+    if len(sys.argv) < 2:
+        print("Usage: python video_loader.py <path_or_url>")
+        sys.exit(1)
 
-        # ✅ FIXED: ensures compatible audio (m4a/AAC) + video
-        'format': 'bestvideo+bestaudio[ext=m4a]/best',
-
-        # ✅ Merge into MP4
-        'merge_output_format': 'mp4',
-
-        # ✅ Force proper conversion (extra safety)
-        'postprocessors': [{
-            'key': 'FFmpegVideoConvertor',
-            'preferedformat': 'mp4',
-        }],
-
-        'quiet': False,
-    }
-
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-
-        # Final merged file path
-        final_path = os.path.join(output_path, f"{info['id']}.mp4")
-
-    print(f"✅ Download completed: {final_path}")
-    return final_path
-
-
-def load_local_video(path):
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"❌ File not found: {path}")
-
-    print(f"✅ Found local video: {path}")
-    return path
+    path = load_video(sys.argv[1])
+    print(f"Video ready at: {path}")

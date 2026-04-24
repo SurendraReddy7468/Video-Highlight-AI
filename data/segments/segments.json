@@ -1,172 +1,127 @@
 [
-    {
-        "start": 0.0,
-        "end": 10.0,
-        "text": "Artificial intelligence for people in a hurry. The easiest way to think about artificial intelligence is in the context of a human."
-    },
-    {
-        "start": 10.0,
-        "end": 17.0,
-        "text": "After all, humans are the most intelligent creatures we know of. AI is a broad branch of computer science."
-    },
-    {
-        "start": 17.0,
-        "end": 28.0,
-        "text": "The goal of AI is to create systems that can function intelligently and independently. Humans can speak and listen to communicate through language."
-    },
-    {
-        "start": 28.0,
-        "end": 38.0,
-        "text": "This is the field of speech recognition. Much of speech recognition is statistically based, hence it's called statistical learning."
-    },
-    {
-        "start": 38.0,
-        "end": 47.0,
-        "text": "Humans can write and read text in a language. This is a field of NLP or natural language processing."
-    },
-    {
-        "start": 47.0,
-        "end": 54.0,
-        "text": "Humans can see with their eyes and process what they see. This is the field of computer vision."
-    },
-    {
-        "start": 54.0,
-        "end": 64.0,
-        "text": "Computer vision falls under the symbolic way for computers to process information. Recently there's been another way which I'll come to later."
-    },
-    {
-        "start": 64.0,
-        "end": 71.0,
-        "text": "Humans recognize the scene around them through their eyes which create images of that world."
-    },
-    {
-        "start": 71.0,
-        "end": 79.0,
-        "text": "This field of image processing, which even though is not directly related to AI, is required for computer vision."
-    },
-    {
-        "start": 79.0,
-        "end": 88.0,
-        "text": "Humans can understand their environment and move around fluidly. This is the field of robotics."
-    },
-    {
-        "start": 88.0,
-        "end": 98.0,
-        "text": "Humans have the ability to see patterns such as grouping of like objects. This is the field of pattern recognition."
-    },
-    {
-        "start": 98.0,
-        "end": 108.0,
-        "text": "Machines are even better at pattern recognition because they can use more data and dimensions of data. This is the field of machine learning."
-    },
-    {
-        "start": 108.0,
-        "end": 117.0,
-        "text": "Now let's talk about the human brain. The human brain is a network of neurons and we use these to learn things."
-    },
-    {
-        "start": 117.0,
-        "end": 128.0,
-        "text": "If we can replicate the structure and the function of the human brain, we might be able to get cognitive capabilities in machines. This is a field of neural networks."
-    },
-    {
-        "start": 128.0,
-        "end": 137.0,
-        "text": "If these networks are more complex and deeper and we use those to learn complex things, that is the field of deep learning."
-    },
-    {
-        "start": 137.0,
-        "end": 145.0,
-        "text": "There are different types of deep learning in machines which are essentially different techniques to replicate what the human brain does."
-    },
-    {
-        "start": 145.0,
-        "end": 157.0,
-        "text": "If we get the network to scan images from left to right, top to bottom, it's a convolution neural network. A CNN is used to recognize objects in a scene."
-    },
-    {
-        "start": 157.0,
-        "end": 168.0,
-        "text": "This is how computer vision fits in. An object recognition is accomplished through AI. Humans can remember the past, like what you had for dinner last night."
-    },
-    {
-        "start": 168.0,
-        "end": 178.0,
-        "text": "Well, at least most of you. We can get a neural network to remember a limited past. This is a recurrent neural network."
-    },
-    {
-        "start": 178.0,
-        "end": 186.0,
-        "text": "As you see, there are two ways AI works. One is symbolic based and another is database."
-    },
-    {
-        "start": 186.0,
-        "end": 193.0,
-        "text": "For the database side called machine learning, we need to feed the machine lots of data before it can learn."
-    },
-    {
-        "start": 194.0,
-        "end": 203.0,
-        "text": "For example, if you had lots of data for sales versus advertising spend, you can plot that data to see some kind of a pattern."
-    },
-    {
-        "start": 203.0,
-        "end": 210.0,
-        "text": "If the machine can learn this pattern, then it can make predictions based on what it has learned."
-    },
-    {
-        "start": 210.0,
-        "end": 222.0,
-        "text": "While one or two or even three dimensions is easy for humans to understand and learn, machines can learn in many more dimensions, like even hundred or thousands."
-    },
-    {
-        "start": 222.0,
-        "end": 233.0,
-        "text": "That's why machines can look at lots of high-dimensional data and determine patterns. Once it learns these patterns, it can make predictions that humans can't even come close to."
-    },
-    {
-        "start": 233.0,
-        "end": 241.0,
-        "text": "We can use all these machine learning techniques to do one of two things, classification or prediction."
-    },
-    {
-        "start": 241.0,
-        "end": 251.0,
-        "text": "As an example, when you use some information about customers to assign new customers to a group, like young adults, then you are classifying that customer."
-    },
-    {
-        "start": 251.0,
-        "end": 263.0,
-        "text": "If you use data to predict if they are likely to defect to a competitor, then you are making a prediction. There is another way to think about learning algorithms used for AI."
-    },
-    {
-        "start": 263.0,
-        "end": 271.0,
-        "text": "If you train an algorithm with data that also contains the answer, then it's called supervised learning."
-    },
-    {
-        "start": 271.0,
-        "end": 279.0,
-        "text": "For example, when you train a machine to recognize your friends by name, you will need to identify them for the computer."
-    },
-    {
-        "start": 280.0,
-        "end": 289.0,
-        "text": "If you train an algorithm with data where you want the machine to figure out the patterns, then it's unsupervised learning."
-    },
-    {
-        "start": 289.0,
-        "end": 301.0,
-        "text": "For example, you might want to feed the data about celestial objects in the universe and expect the machine to come up with patterns in that data by itself."
-    },
-    {
-        "start": 301.0,
-        "end": 311.0,
-        "text": "If you give any algorithm a goal and expect the machine through trial and error to achieve that goal, then it's called reinforcement learning."
-    },
-    {
-        "start": 311.0,
-        "end": 323.0,
-        "text": "A robot's attempt to climb over the wall until it succeeds is an example of that. So there you go. Thanks for watching and if you like my videos, please subscribe."
-    }
+  {
+    "start": 0.0,
+    "end": 17.6,
+    "text": "Hello everyone, welcome back and if you're new here, I'm in the starting and in this video, I want to speak about how can you achieve your goals in the least amount of time possible. I'm going to show you the exact five step framework that I use to achieve my goals in the least amount of time possible. I've done this multiple times in my life starting from my college placements."
+  },
+  {
+    "start": 17.6,
+    "end": 36.08,
+    "text": "I've spent my entire college life making videos but I still ended up with a decent placement. Like even last year I was fed the entire time but I lost all that weight in like literally one or two months. Most of the progress that I've had in my life has come because of this exact five step framework. So please listen to me carefully for the next five minutes and if you're ready,"
+  },
+  {
+    "start": 36.08,
+    "end": 40.08,
+    "text": "go to the comments below and write, I am ready to run and let's get started."
+  },
+  {
+    "start": 44.0,
+    "end": 63.12,
+    "text": "Most of the people around you are poisoned to your progress because think about this. Every single time you have a goal to chase, you make a plan, you just sit down to study or sit down to work. What happens? Someone randomly calls, some random notification pops up and you're just distracted. If you're really serious about doing one year's worth of work in just one month, you need to just"
+  },
+  {
+    "start": 63.12,
+    "end": 80.96,
+    "text": "fucking disappear for everyone. Stop picking up the calls, stop replying to deals, stop doing everything. All you have to do is just focus on your goals and even if you speak to people, you just are going to speak about this one goal that you have. Now the step number two is string the time lines"
+  },
+  {
+    "start": 81.04,
+    "end": 100.32,
+    "text": "because imagine you want to prepare for an exam, edit a video or even finish your homework and if you know that you have seven days, you'll do the entire work for seven days and some of you must be thinking, oh, pro, but one year and one month, lot of difference, don't know. Just think about your days, last 10 days, how much time did you actually spend on your goals? Like if you have"
+  },
+  {
+    "start": 100.32,
+    "end": 119.52,
+    "text": "eight hours in a day, I'm very sure four of those hours just went and speaking to some people. Rest of the four hours, two hours just went into just getting into flow state. You actually work barely for one to one two hours, that's all. I mean, even if your goal is to go to gym and get fed, half of the time you're spending finding your socks, I'm not talking about socks here, but I think"
+  },
+  {
+    "start": 119.52,
+    "end": 138.72,
+    "text": "you got the point, you literally waste a lot of time because you think that you have a lot of time. Now this third one is kind of crazy because I think we are all spoiled by watching a day in the life of my productive life videos on Instagram, where they'll be like, at 5 to 6 o'clock, I'll go to gym, 6 to 7 o'clock, I'll come back and make eggs, what the fuck? And the sad part is that most of us"
+  },
+  {
+    "start": 138.72,
+    "end": 156.56,
+    "text": "we take inspiration from those videos and we actually think we actually believe that all of that is true. But in real life, that's just fake. I think they must have at least spent two days recording that video and four days editing it even before posting that video. And to all the people who take inspiration from that thing, they'll do this, this, this, this, they have like 10 different"
+  },
+  {
+    "start": 156.56,
+    "end": 173.76,
+    "text": "things to do. Stop. You can't be chasing 10 different things all at the same time. You just need to have one, just one fucking goal. That's it. And in the worst possible scenario, you can have two different goals, but even those two have to go in sync with each other, which means you can go"
+  },
+  {
+    "start": 173.76,
+    "end": 192.4,
+    "text": "to work, work, work, work, work, go to gym, come back and work, work, work. But your major priority, the P0 is this work, is the goal that you're chasing. And if this is ever coming in the way of this, you should be like, fuck it, this is my primary goal and this is what I'll chase. You just need to"
+  },
+  {
+    "start": 192.48,
+    "end": 212.72,
+    "text": "prioritize for 30 days that he said. Now let's talk about the fourth one. And I think the fourth one is going to be one of the biggest reasons why most of you will fail during the next 30 days. Listen to me very carefully. So once you finally decide that you want to fucking disappear, you'll sink the goals. You don't have one year. You just have 30 days and you also have just one"
+  },
+  {
+    "start": 212.72,
+    "end": 229.44,
+    "text": "goal inside your head and you're ready to spend the next 30 days chasing it. Now the first five, six days will go amazingly well. You'll be having a lot of motivation. None of the distractions can distract you. You're at the God level productivity levels here. Now the next seven days will also"
+  },
+  {
+    "start": 229.44,
+    "end": 244.48,
+    "text": "go decently well. You'll still have good motivation levels. You'll still be consistent and everything will be nice. Now the third week is usually where the problems start coming up. You lose your consistency. Your motivation levels come down. You'll be looking at others and you'll be like, oh,"
+  },
+  {
+    "start": 244.56,
+    "end": 260.72,
+    "text": "shit, am I doing right? Am I doing wrong? You'll get into all this overthinking and all that stuff usually happens during the third week. And you instead of focusing on your goals, you'll start overthinking and your progress finally starts slowing down. And the last week you'll spend in"
+  },
+  {
+    "start": 260.72,
+    "end": 278.32,
+    "text": "overthinking and that's it. You should have been literally here, but you're literally here. This is the same place that you were before two weeks. What happened? Now if this should not happen to you, there's a very simple trick that you can use. And this is called as having"
+  },
+  {
+    "start": 278.32,
+    "end": 295.68,
+    "text": "checkpoints where you don't just have goals, but you also have a solid plan of where you have to be after every five days. So in this way, after the first five days is over, you know where you have to be after the next five days. And after that is over, instead of you overthinking, of instead of"
+  },
+  {
+    "start": 295.68,
+    "end": 315.2,
+    "text": "you thinking about someone else and comparing, I'll be like, oh, what is that guy doing? What is this guy doing? None of this. None of them will happen. You'll actually have the clarity. Oh, this is where I want to be. Let me just go there. Once this goal is achieved, you'll also feel good. You'll also feel more motivated. And now you have the new targets to chase. So this keeps you in a very nice"
+  },
+  {
+    "start": 315.2,
+    "end": 330.64,
+    "text": "dopamine loop. It's like, okay, five days cut target is done. Now we have something else to chase. Again, you'll chase it. Now that is also achieved. Again, you'll chase it. And that is also achieved. And then finally, you will not be here. You'll actually be here. In the 30 days, you'll have like"
+  },
+  {
+    "start": 330.64,
+    "end": 347.76,
+    "text": "actual progress in your life. And what if something happens to you here and you're not actually at the target, you're still here. What will you do that? Simple. Don't worry. Do not panic. Just shift the dates. Like from here, you're still here. So shift these five days and shift it to here."
+  },
+  {
+    "start": 347.76,
+    "end": 362.96,
+    "text": "But what I wanted to tell you from step number four is that have checkpoints because checkpoints keep you in a nice dopamine loop. And they also give you a clear direction of where you are and where you have to be. And finally, the fifth one, this is again super important because this"
+  },
+  {
+    "start": 362.96,
+    "end": 382.0,
+    "text": "can actually break it or make it. And this is kind of very rude, very weird to say this. But this is to just fucking ignore everyone. Get emotionless. Someone came to you and they're like insulting you. You don't give a fuck. You just walk straight, focus on your goals. Someone literally came to you"
+  },
+  {
+    "start": 382.0,
+    "end": 397.76,
+    "text": "and they just pushed you. You don't give a fuck. You're like, come back. Work. A group of bunch of assholes are teasing you. What do you do? You don't react. You just turn this side. Keep working. Let the dogs keep barking because this fucking train doesn't stop. It doesn't give a fuck. Say"
+  },
+  {
+    "start": 397.76,
+    "end": 412.88,
+    "text": "that this is the five step framework. And if you're still watching this, I really want you to go to the comments below and write it down. What is that one goal that you're going to chase for the next 30 days? Chase it for the next 30 days and come back and reply to it. I want to see you transfer."
+  },
+  {
+    "start": 412.88,
+    "end": 418.4,
+    "text": "I want you to be the best fucking version of yourself. Let's do it."
+  }
 ]

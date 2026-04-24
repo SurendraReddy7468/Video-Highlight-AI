@@ -1,0 +1,92 @@
+import os
+import json
+
+from src.preprocessing.video_loader    import load_video
+from src.preprocessing.audio_extractor import extract_audio
+from src.analysis.text.transcription   import transcribe_audio
+from src.preprocessing.segmenter       import merge_segments, save_segments
+from src.scoring.highlight_score        import score_segments, save_scores
+from src.editing.clip_generator         import generate_clip
+from src.editing.format_converter       import convert_to_vertical, convert_to_horizontal
+
+
+def run_pipeline(
+    source: str,
+    mode: str = "shorts",
+    video_type: str = "podcast",
+    whisper_model: str = "base",
+    output_name: str = "final_clip",
+) -> str:
+    """
+    Full end-to-end pipeline: video → highlight clip.
+
+    Args:
+        source:        Local video path OR YouTube URL
+        mode:          'shorts'     → 30–60s vertical  9:16
+                       'highlights' → 60–180s horizontal 16:9
+        video_type:    'podcast' or 'normal' (affects scoring weights)
+        whisper_model: Whisper model size: tiny / base / small / medium
+        output_name:   Output filename (without extension)
+
+    Returns:
+        Path to the final output clip
+    """
+    print("\n" + "="*55)
+    print("  🎙️  Podcast Video Highlight Generator")
+    print(f"  Mode      : {mode}")
+    print(f"  Type      : {video_type}")
+    print(f"  Source    : {source}")
+    print("="*55 + "\n")
+
+    # ── STEP 1: Load video ───────────────────────────────────
+    print("── STEP 1/7  Load Video ──────────────────────────────")
+    video_path = load_video(source)
+
+    # ── STEP 2: Extract audio ────────────────────────────────
+    print("\n── STEP 2/7  Extract Audio ───────────────────────────")
+    audio_path = extract_audio(video_path)
+
+    # ── STEP 3: Transcribe ───────────────────────────────────
+    print("\n── STEP 3/7  Transcribe Audio ────────────────────────")
+    raw_segments = transcribe_audio(audio_path, model_size=whisper_model)
+
+    # ── STEP 4: Segment ──────────────────────────────────────
+    print("\n── STEP 4/7  Merge Segments ──────────────────────────")
+    segments = merge_segments(raw_segments)
+    save_segments(segments)
+
+    # ── STEP 5: Score ────────────────────────────────────────
+    print("\n── STEP 5/7  Score Segments ──────────────────────────")
+    scored = score_segments(segments, audio_path, mode=video_type)
+    save_scores(scored)
+
+    # ── STEP 6: Generate raw clip ────────────────────────────
+    print("\n── STEP 6/7  Generate Clip ───────────────────────────")
+    raw_clip = generate_clip(
+        video_path,
+        scored,
+        mode=mode,
+        output_name="raw_clip",
+    )
+
+    # ── STEP 7: Convert format ───────────────────────────────
+    print("\n── STEP 7/7  Convert Format ──────────────────────────")
+    out_dir = f"data/outputs/{'shorts' if mode == 'shorts' else 'highlights'}"
+    os.makedirs(out_dir, exist_ok=True)
+    final_path = os.path.join(out_dir, f"{output_name}.mp4")
+
+    if mode == "shorts":
+        final_path = convert_to_vertical(raw_clip, final_path)
+    else:
+        final_path = convert_to_horizontal(raw_clip, final_path)
+
+    # Clean up raw clip
+    if os.path.exists(raw_clip) and raw_clip != final_path:
+        os.remove(raw_clip)
+
+    print("\n" + "="*55)
+    print(f"  🎉 DONE!")
+    print(f"  Output → {final_path}")
+    print("="*55 + "\n")
+
+    return final_path
