@@ -57,7 +57,7 @@ def run_pipeline(
 
     # ── STEP 5: Score ────────────────────────────────────────
     print("\n── STEP 5/7  Score Segments ──────────────────────────")
-    scored = score_segments(segments, audio_path, mode=video_type)
+    scored = score_segments(segments, audio_path, video_path, mode=video_type)
     save_scores(scored)
 
     # ── STEP 6: Generate raw clip ────────────────────────────
@@ -76,7 +76,9 @@ def run_pipeline(
     final_path = os.path.join(out_dir, f"{output_name}.mp4")
 
     if mode == "shorts":
-        final_path = convert_to_vertical(raw_clip, final_path)
+        # Get average face position from top scored segment
+        face_x = scored[0].get("face_center_x", 0.5)
+        final_path = convert_to_vertical(raw_clip, final_path, face_center_x=face_x)
     else:
         final_path = convert_to_horizontal(raw_clip, final_path)
 

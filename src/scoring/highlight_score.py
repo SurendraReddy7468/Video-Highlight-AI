@@ -1,10 +1,10 @@
 import json
 import os
 
-
 def score_segments(
     segments: list,
     audio_path: str,
+    video_path: str,
     mode: str = "podcast",
 ) -> list:
     """
@@ -25,8 +25,11 @@ def score_segments(
     """
     from src.analysis.audio.energy   import compute_energy
     from src.analysis.audio.pitch    import compute_pitch_variation
+    from src.analysis.audio.pause_detection import compute_pause_score
     from src.analysis.text.keywords  import compute_keyword_score
     from src.analysis.text.sentiment import compute_sentiment_score
+    from src.analysis.video.scene_change import compute_scene_change_score
+    from src.analysis.video.face_detect  import compute_face_score
 
     # Scoring weights
     weights = {
@@ -45,15 +48,20 @@ def score_segments(
         # ── Audio features ──────────────────────────────────────
         energy = compute_energy(audio_path, start, end)
         pitch  = compute_pitch_variation(audio_path, start, end)
-        audio_score = (energy + pitch) / 2
+        pause       = compute_pause_score(audio_path, start, end)
+        audio_score = (energy + pitch + pause) / 3
 
         # ── Text features ────────────────────────────────────────
         keywords  = compute_keyword_score(seg["text"], all_texts)
         sentiment = compute_sentiment_score(seg["text"])
         text_score = (keywords + sentiment) / 2
 
-        # ── Video features (placeholder — 0.5 neutral until video module done) ──
-        video_score = seg.get("scene_change", 0.5) * 0.5 + seg.get("face_detect", 0.5) * 0.5
+        # ── Video features (now fully active) ───────────────────────
+        scene       = compute_scene_change_score(video_path, start, end)
+        face_result = compute_face_score(video_path, start, end)
+        face        = face_result["score"]
+        face_cx     = face_result["center_x"]
+        video_score = (scene + face) / 2
 
         # ── Final weighted score ─────────────────────────────────
         final_score = (
@@ -63,17 +71,21 @@ def score_segments(
         )
 
         scored.append({
-            "start":       start,
-            "end":         end,
-            "text":        seg["text"],
-            "energy":      energy,
-            "pitch":       pitch,
-            "keywords":    keywords,
-            "sentiment":   sentiment,
-            "audio_score": round(audio_score, 4),
-            "text_score":  round(text_score,  4),
-            "video_score": round(video_score, 4),
-            "score":       round(final_score, 4),
+            "start":         start,
+            "end":           end,
+            "text":          seg["text"],
+            "energy":        energy,
+            "pitch":         pitch,
+            "pause":         pause,          
+            "keywords":      keywords,
+            "sentiment":     sentiment,
+            "scene":         scene,          
+            "face":          face,           
+            "face_center_x": face_cx,        
+            "audio_score":   round(audio_score, 4),
+            "text_score":    round(text_score,  4),
+            "video_score":   round(video_score, 4),
+            "score":         round(final_score, 4),
         })
 
     # Sort best first
