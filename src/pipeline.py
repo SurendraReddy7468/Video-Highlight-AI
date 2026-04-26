@@ -1,5 +1,6 @@
 import os
 import json
+import time
 
 from src.preprocessing.video_loader    import load_video
 from src.preprocessing.audio_extractor import extract_audio
@@ -62,6 +63,24 @@ def run_pipeline(
 
     # ── STEP 6: Generate raw clip ────────────────────────────
     print("\n── STEP 6/7  Generate Clip ───────────────────────────")
+
+    # Define out_dir early — needed by both intro and normal modes
+    import time
+    base_name = os.path.splitext(os.path.basename(source))[0]
+    timestamp = int(time.time())
+    out_dir   = f"data/outputs/{'shorts' if mode in ('shorts', 'intro') else 'highlights'}"
+    os.makedirs(out_dir, exist_ok=True)
+
+    if mode == "intro":
+        from src.editing.clip_generator import generate_intro_clip
+        raw_clip = generate_intro_clip(
+            video_path, scored,
+            output_dir=out_dir,
+            output_name=f"{base_name}_intro_{timestamp}",
+        )
+        print(f"\n{'='*55}\n  🎉 DONE!\n  Output → {raw_clip}\n{'='*55}\n")
+        return raw_clip
+
     raw_clip = generate_clip(
         video_path,
         scored,
@@ -71,18 +90,14 @@ def run_pipeline(
 
     # ── STEP 7: Convert format ───────────────────────────────
     print("\n── STEP 7/7  Convert Format ──────────────────────────")
-    out_dir = f"data/outputs/{'shorts' if mode == 'shorts' else 'highlights'}"
-    os.makedirs(out_dir, exist_ok=True)
-    final_path = os.path.join(out_dir, f"{output_name}.mp4")
+    final_path = os.path.join(out_dir, f"{base_name}_{mode}_{timestamp}.mp4")
 
     if mode == "shorts":
-        # Get average face position from top scored segment
-        face_x = scored[0].get("face_center_x", 0.5)
+        face_x     = scored[0].get("face_center_x", 0.5)
         final_path = convert_to_vertical(raw_clip, final_path, face_center_x=face_x)
     else:
         final_path = convert_to_horizontal(raw_clip, final_path)
 
-    # Clean up raw clip
     if os.path.exists(raw_clip) and raw_clip != final_path:
         os.remove(raw_clip)
 

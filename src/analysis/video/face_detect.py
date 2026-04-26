@@ -80,8 +80,8 @@ def compute_face_score(video_path: str, start: float, end: float,
         return {"score": 0.5, "center_x": 0.5, "center_y": 0.5}
 
     score    = round(sum(face_detected) / len(face_detected), 4)
-    center_x = round(float(np.mean(face_centers_x)) if face_centers_x else 0.5, 4)
-    center_y = round(float(np.mean(face_centers_y)) if face_centers_y else 0.5, 4)
+    center_x = round(float(np.median(face_centers_x)) if face_centers_x else 0.5, 4)
+    center_y = round(float(np.median(face_centers_y)) if face_centers_y else 0.5, 4)
 
     return {"score": score, "center_x": center_x, "center_y": center_y}
 

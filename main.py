@@ -42,9 +42,9 @@ def parse_args():
     )
     parser.add_argument(
         "--mode", "-m",
-        choices=["shorts", "highlights"],
+        choices=["shorts", "highlights", "intro"],
         default="shorts",
-        help="Output mode: 'shorts' (30-60s vertical) or 'highlights' (60-180s horizontal)",
+        help="Output mode: 'shorts' (30-60s vertical) | 'highlights' (60-180s horizontal) | 'intro' (15-25s hook teaser)",
     )
     parser.add_argument(
         "--type", "-t",

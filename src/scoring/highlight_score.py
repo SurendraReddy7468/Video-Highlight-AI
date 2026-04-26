@@ -1,6 +1,35 @@
 import json
 import os
 
+def _narrative_penalty(seg_a: dict, seg_b: dict) -> float:
+    """
+    Calculate a penalty (0.0–0.3) for jumping between two unrelated segments.
+    Lower penalty = more related = better flow.
+
+    Checks word overlap between adjacent segment texts.
+    Segments sharing key words are likely on the same topic.
+    """
+    import re
+    STOP = {"a","an","the","and","or","but","in","on","at","to","for","of",
+            "with","is","it","was","are","i","you","he","she","we","they",
+            "this","that","so","just","not","be","do","get","have","my","your"}
+
+    def keywords(text):
+        words = re.findall(r"[a-z]+", text.lower())
+        return set(w for w in words if w not in STOP and len(w) > 3)
+
+    kw_a = keywords(seg_a["text"])
+    kw_b = keywords(seg_b["text"])
+
+    if not kw_a or not kw_b:
+        return 0.15   # neutral penalty
+
+    overlap = len(kw_a & kw_b) / max(len(kw_a | kw_b), 1)
+
+    # overlap=0 (no common words) → penalty=0.25
+    # overlap=1 (identical topics) → penalty=0.0
+    return round(0.25 * (1.0 - overlap), 4)
+
 def score_segments(
     segments: list,
     audio_path: str,
@@ -28,6 +57,7 @@ def score_segments(
     from src.analysis.audio.pause_detection import compute_pause_score
     from src.analysis.text.keywords  import compute_keyword_score
     from src.analysis.text.sentiment import compute_sentiment_score
+    from src.analysis.text.hook_detector import compute_hook_score
     from src.analysis.video.scene_change import compute_scene_change_score
     from src.analysis.video.face_detect  import compute_face_score
 
@@ -54,7 +84,8 @@ def score_segments(
         # ── Text features ────────────────────────────────────────
         keywords  = compute_keyword_score(seg["text"], all_texts)
         sentiment = compute_sentiment_score(seg["text"])
-        text_score = (keywords + sentiment) / 2
+        hook      = compute_hook_score(seg["text"])
+        text_score = (keywords * 0.4 + sentiment * 0.3 + hook * 0.3)
 
         # ── Video features (now fully active) ───────────────────────
         scene       = compute_scene_change_score(video_path, start, end)
@@ -79,6 +110,7 @@ def score_segments(
             "pause":         pause,          
             "keywords":      keywords,
             "sentiment":     sentiment,
+            "hook":          hook,
             "scene":         scene,          
             "face":          face,           
             "face_center_x": face_cx,        

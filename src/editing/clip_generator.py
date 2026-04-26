@@ -1,6 +1,7 @@
 import os
 from moviepy.editor import VideoFileClip, concatenate_videoclips
-
+from moviepy.video.fx.fadein  import fadein
+from moviepy.video.fx.fadeout import fadeout
 
 def generate_clip(
     video_path: str,
@@ -70,8 +71,18 @@ def generate_clip(
         end   = min(seg["end"], video.duration)
         clip  = video.subclip(start, end)
         clips.append(clip)
+    FADE = 0.4   # seconds — crossfade duration
 
-    final      = concatenate_videoclips(clips, method="compose")
+    faded = []
+    for i, clip in enumerate(clips):
+        c = clip
+        if i > 0:                    # fade in on every clip except first
+            c = fadein(c, FADE)
+        if i < len(clips) - 1:       # fade out on every clip except last
+            c = fadeout(c, FADE)
+        faded.append(c)
+
+    final = concatenate_videoclips(faded, method="compose")
     output_path = os.path.join(output_dir, f"{output_name}.mp4")
 
     print(f"[ClipGen] 🎬 Rendering final clip → {output_path}")
@@ -79,6 +90,8 @@ def generate_clip(
         output_path,
         codec="libx264",
         audio_codec="aac",
+        bitrate="8000k",        # higher bitrate = sharper image
+        audio_bitrate="192k",   # better audio quality
         verbose=False,
         logger=None,
     )
@@ -87,4 +100,89 @@ def generate_clip(
     final.close()
 
     print(f"[ClipGen] ✅ Done: {output_path}  ({total_secs:.1f}s)")
+    return output_path
+
+def generate_intro_clip(
+    video_path: str,
+    scored_segments: list,
+    output_dir: str = "data/outputs/shorts",
+    output_name: str = "intro_clip",
+) -> str:
+    """
+    Generate a 15–25 second intro clip designed to hook viewers.
+
+    Strategy:
+      1. Pick the highest hook-scoring segment as the opener (first 3s grab attention)
+      2. Add 1–2 more high-scoring teaser moments from later in the video
+      3. Result: a preview that makes viewers want to watch the full video
+
+    Different from 'shorts' mode — intro clips are designed to be
+    placed at the START of a longer video or as a standalone teaser,
+    not as a self-contained highlight.
+    """
+    os.makedirs(output_dir, exist_ok=True)
+
+    MIN_DURATION = 15
+    MAX_DURATION = 25
+
+    # Sort by hook score first — intro needs the most attention-grabbing opener
+    hook_sorted = sorted(scored_segments, key=lambda x: x.get("hook", 0), reverse=True)
+
+    # Pick best hook as opener
+    opener    = hook_sorted[0]
+    selected  = [opener]
+    total_sec = opener["end"] - opener["start"]
+
+    print(f"[ClipGen] 🎣 Intro opener: [{opener['start']}s→{opener['end']}s]  "
+          f"hook={opener.get('hook', 0):.3f}  {opener['text'][:50]}...")
+
+    # Fill remaining time with high overall score segments (not the opener)
+    remaining = [s for s in scored_segments if s["start"] != opener["start"]]
+    remaining.sort(key=lambda x: x["score"], reverse=True)
+
+    for seg in remaining:
+        dur = seg["end"] - seg["start"]
+        if total_sec + dur > MAX_DURATION:
+            continue
+        selected.append(seg)
+        total_sec += dur
+        if total_sec >= MIN_DURATION:
+            break
+
+    # Sort chronologically so the intro flows naturally through the video
+    selected.sort(key=lambda x: x["start"])
+
+    print(f"[ClipGen] 🎬 Intro: {len(selected)} segments ({total_sec:.1f}s)")
+    for s in selected:
+        print(f"          [{s['start']}s→{s['end']}s]  {s['text'][:50]}...")
+
+    # Cut and join
+    video  = VideoFileClip(video_path)
+    clips  = []
+    for seg in selected:
+        start = max(0, seg["start"])
+        end   = min(seg["end"], video.duration)
+        clips.append(video.subclip(start, end))
+
+    from moviepy.video.fx.fadein  import fadein
+    from moviepy.video.fx.fadeout import fadeout
+    FADE = 0.3
+    faded = []
+    for i, clip in enumerate(clips):
+        c = clip
+        if i > 0:              c = fadein(c, FADE)
+        if i < len(clips) - 1: c = fadeout(c, FADE)
+        faded.append(c)
+
+    final       = concatenate_videoclips(faded, method="compose")
+    output_path = os.path.join(output_dir, f"{output_name}.mp4")
+
+    print(f"[ClipGen] 🎬 Rendering intro → {output_path}")
+    final.write_videofile(output_path, codec="libx264", audio_codec="aac",
+                          bitrate="8000k", audio_bitrate="192k",
+                          verbose=False, logger=None)
+    video.close()
+    final.close()
+
+    print(f"[ClipGen] ✅ Intro done: {output_path}  ({total_sec:.1f}s)")
     return output_path

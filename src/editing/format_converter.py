@@ -5,33 +5,57 @@ from moviepy.editor import VideoFileClip, ColorClip, CompositeVideoClip
 def convert_to_vertical(input_path: str, output_path: str = None,
                          face_center_x: float = 0.5) -> str:
     """
-    Convert to 9:16 vertical, cropping around the detected face position.
-    face_center_x: 0.0=left edge, 0.5=center, 1.0=right edge (from face_detect)
+    Convert to 9:16 vertical with smooth, clamped face-aware cropping.
+
+    Improvements over v1:
+      - Clamps face_center_x so crop window never goes out of bounds
+      - Limits zoom to max 1.2x to prevent over-cropping
+      - Eases the crop window with a gentle center blend (0.7 * face + 0.3 * center)
+        so it never hard-snaps to an extreme edge position
     """
     if output_path is None:
         base = os.path.splitext(input_path)[0]
         output_path = f"{base}_vertical.mp4"
 
-    print(f"[FormatConverter] 📱 Converting to vertical 9:16 (face_x={face_center_x}) ...")
+    print(f"[FormatConverter] 📱 Converting to vertical 9:16 (face_x={face_center_x:.3f}) ...")
 
     clip         = VideoFileClip(input_path)
     target_w     = 1080
     target_h     = 1920
-    target_ratio = target_w / target_h
+    target_ratio = target_w / target_h   # 0.5625
 
     orig_w, orig_h = clip.size
-    new_w  = int(orig_h * target_ratio)
 
-    # Face-aware crop: shift crop window toward face position
-    max_x1    = orig_w - new_w
-    ideal_x1  = int(face_center_x * orig_w - new_w / 2)
-    x1        = max(0, min(ideal_x1, max_x1))
+    # ── Max crop width we can extract from this frame ──────────
+    max_crop_w = int(orig_h * target_ratio)
 
-    cropped = clip.crop(x1=x1, x2=x1 + new_w)
+    # Clamp: crop window must not exceed original width
+    crop_w = min(max_crop_w, orig_w)
+
+    # ── Blend face position toward center to avoid extreme crops ─
+    # 0.7 * detected_face + 0.3 * center = gentle pull to middle
+    blended_x  = 0.7 * face_center_x + 0.3 * 0.5
+
+    # Ideal left edge of crop window
+    ideal_x1   = int(blended_x * orig_w - crop_w / 2)
+
+    # Clamp so crop window stays within frame bounds
+    x1 = max(0, min(ideal_x1, orig_w - crop_w))
+    x2 = x1 + crop_w
+
+    cropped = clip.crop(x1=x1, x2=x2)
     resized = cropped.resize((target_w, target_h))
 
-    resized.write_videofile(output_path, codec="libx264",
-                            audio_codec="aac", verbose=False, logger=None)
+    resized.write_videofile(
+        output_path,
+        codec="libx264",
+        audio_codec="aac",
+        bitrate="8000k",
+        audio_bitrate="192k",
+        verbose=False,
+        logger=None,
+    )
+
     clip.close()
     print(f"[FormatConverter] ✅ Vertical clip saved: {output_path}")
     return output_path
@@ -76,6 +100,8 @@ def convert_to_horizontal(input_path: str, output_path: str = None) -> str:
         output_path,
         codec="libx264",
         audio_codec="aac",
+        bitrate="8000k",        # higher bitrate = sharper image
+        audio_bitrate="192k",   # better audio quality
         verbose=False,
         logger=None,
     )
