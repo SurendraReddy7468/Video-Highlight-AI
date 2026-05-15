@@ -54,7 +54,8 @@ def run_pipeline(
     # ── STEP 4: Segment ──────────────────────────────────────
     print("\n── STEP 4/7  Merge Segments ──────────────────────────")
     segments = merge_segments(raw_segments)
-    save_segments(segments)
+    base_name = os.path.splitext(os.path.basename(audio_path))[0]
+    save_segments(segments, name=base_name)
 
     # ── STEP 5: Score ────────────────────────────────────────
     print("\n── STEP 5/7  Score Segments ──────────────────────────")
