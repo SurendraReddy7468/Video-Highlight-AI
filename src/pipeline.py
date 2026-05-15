@@ -68,7 +68,7 @@ def run_pipeline(
     import time
     base_name = os.path.splitext(os.path.basename(source))[0]
     timestamp = int(time.time())
-    out_dir   = f"data/outputs/{'shorts' if mode in ('shorts', 'intro') else 'highlights'}"
+    out_dir = f"data/outputs/{mode}"
     os.makedirs(out_dir, exist_ok=True)
 
     if mode == "intro":
