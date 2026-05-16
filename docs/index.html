@@ -146,7 +146,7 @@ h1.hero-title em { color: var(--orange); font-style: normal; }
 }
 .mode-card:nth-child(1) { animation-delay: 0.1s; }
 .mode-card:nth-child(2) { animation-delay: 0.2s; }
-.mode-card:nth-child(3) { animation-delay: 0.3s; animation: slideUp 0.6s ease both, activeGlow 3s 1s ease forwards; }
+.mode-card:nth-child(3) { animation-delay: 0.3s; }
 .mode-card:hover { transform: translateX(6px); border-color: var(--orange); box-shadow: 0 4px 20px rgba(244,82,30,0.12); }
 .mode-card.active { background: var(--orange); border-color: var(--orange); }
 .mode-card.active .mode-title { color: white; }
@@ -870,8 +870,14 @@ const observer = new IntersectionObserver((entries) => {
 document.querySelectorAll('.signal-card').forEach(c => observer.observe(c));
 
 // Smooth active card rotation in hero
+// Smooth active card rotation in hero
 const cards = document.querySelectorAll('.mode-card');
-let current = 2;
+// Remove active from all first
+cards.forEach(c => c.classList.remove('active'));
+// Start with first card
+let current = 0;
+cards[current].classList.add('active');
+
 setInterval(() => {
   cards[current].classList.remove('active');
   current = (current + 1) % cards.length;
