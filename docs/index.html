@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Podcast VH — AI Video Highlight Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+<style>
+/* ── Variables ─────────────────────────────────────── */
+:root {
+  --orange:     #F4521E;
+  --deep:       #D94010;
+  --burnt:      #C03A10;
+  --warm-bg:    #FFF8F4;
+  --light-tint: #FDEEE6;
+  --white:      #FFFFFF;
+  --dark:       #1A0A00;
+  --gray:       #6B5B52;
+  --gray-light: #C4B8B2;
+  --border:     #EDD8CE;
+  --card-bg:    #FFFFFF;
+  --radius:     16px;
+  --radius-sm:  10px;
+}
+
+/* ── Reset ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--warm-bg);
+  color: var(--dark);
+  overflow-x: hidden;
+}
+
+/* ── Typography ────────────────────────────────────── */
+h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
+
+/* ── NAV ───────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 5%; height: 68px;
+  background: rgba(255,248,244,0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem;
+  color: var(--dark); text-decoration: none;
+}
+.nav-logo-dot {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: white; font-weight: 800;
+}
+.nav-links { display: flex; gap: 32px; }
+.nav-links a {
+  font-size: 0.88rem; color: var(--gray); text-decoration: none;
+  font-weight: 500; letter-spacing: 0.01em;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--orange); }
+.nav-cta {
+  background: var(--orange); color: white;
+  border: none; padding: 10px 22px; border-radius: 8px;
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem;
+  cursor: pointer; text-decoration: none;
+  transition: background 0.2s, transform 0.15s;
+}
+.nav-cta:hover { background: var(--deep); transform: translateY(-1px); }
+
+/* ── HERO ──────────────────────────────────────────── */
+#hero {
+  min-height: 100vh;
+  display: flex; align-items: center;
+  padding: 100px 5% 60px;
+  position: relative; overflow: hidden;
+}
+.hero-bg-blob {
+  position: absolute; top: -120px; right: -180px;
+  width: 700px; height: 700px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(244,82,30,0.10) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-bg-blob2 {
+  position: absolute; bottom: -80px; left: -100px;
+  width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(244,82,30,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-inner {
+  max-width: 1200px; margin: 0 auto; width: 100%;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--light-tint); border: 1px solid var(--border);
+  padding: 6px 14px; border-radius: 100px;
+  font-size: 0.78rem; font-weight: 600; color: var(--orange);
+  margin-bottom: 24px; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); display: inline-block; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+
+h1.hero-title {
+  font-size: clamp(2.4rem, 5vw, 3.8rem);
+  font-weight: 800; line-height: 1.08;
+  color: var(--dark); margin-bottom: 20px;
+  letter-spacing: -0.03em;
+}
+h1.hero-title em { color: var(--orange); font-style: normal; }
+.hero-sub {
+  font-size: 1.05rem; color: var(--gray); line-height: 1.65;
+  max-width: 480px; margin-bottom: 36px; font-weight: 300;
+}
+.hero-btns { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 48px; }
+.btn-primary {
+  background: var(--orange); color: white;
+  padding: 14px 28px; border-radius: 10px;
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+  box-shadow: 0 4px 20px rgba(244,82,30,0.30);
+}
+.btn-primary:hover { background: var(--deep); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(244,82,30,0.38); }
+.btn-secondary {
+  background: transparent; color: var(--orange);
+  padding: 14px 28px; border-radius: 10px;
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem;
+  text-decoration: none; border: 2px solid var(--orange);
+  transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-secondary:hover { background: var(--light-tint); transform: translateY(-2px); }
+
+/* Mode cards in hero */
+.hero-cards { display: flex; flex-direction: column; gap: 14px; }
+.mode-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 22px 24px;
+  display: flex; align-items: flex-start; gap: 16px;
+  transition: all 0.25s; cursor: default;
+  animation: slideUp 0.6s ease both;
+}
+.mode-card:nth-child(1) { animation-delay: 0.1s; }
+.mode-card:nth-child(2) { animation-delay: 0.2s; }
+.mode-card:nth-child(3) { animation-delay: 0.3s; animation: slideUp 0.6s ease both, activeGlow 3s 1s ease forwards; }
+.mode-card:hover { transform: translateX(6px); border-color: var(--orange); box-shadow: 0 4px 20px rgba(244,82,30,0.12); }
+.mode-card.active { background: var(--orange); border-color: var(--orange); }
+.mode-card.active .mode-title { color: white; }
+.mode-card.active .mode-desc { color: rgba(255,255,255,0.82); }
+.mode-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--light-tint); display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.mode-card.active .mode-icon { background: rgba(255,255,255,0.2); }
+.mode-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; color: var(--dark); margin-bottom: 4px; }
+.mode-desc { font-size: 0.85rem; color: var(--gray); line-height: 1.45; }
+
+@keyframes slideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+@keyframes activeGlow { to{background:var(--orange);border-color:var(--orange)} }
+
+.hero-stats {
+  display: flex; gap: 28px;
+}
+.stat { }
+.stat-num { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.6rem; color: var(--orange); }
+.stat-label { font-size: 0.78rem; color: var(--gray); font-weight: 400; margin-top: 2px; }
+
+/* ── HOW IT WORKS ──────────────────────────────────── */
+#how {
+  padding: 100px 5%;
+  background: var(--white);
+}
+.section-inner { max-width: 1200px; margin: 0 auto; }
+.section-tag {
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--orange); margin-bottom: 12px;
+}
+.section-title {
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 800;
+  color: var(--dark); margin-bottom: 16px; letter-spacing: -0.02em;
+}
+.section-sub {
+  font-size: 1rem; color: var(--gray); max-width: 520px;
+  line-height: 1.65; margin-bottom: 60px; font-weight: 300;
+}
+
+.pipeline {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  gap: 0; position: relative;
+}
+.pipeline::before {
+  content: '';
+  position: absolute; top: 36px; left: 10%; right: 10%;
+  height: 2px; background: linear-gradient(90deg, var(--light-tint), var(--orange), var(--light-tint));
+  z-index: 0;
+}
+.pipe-step {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; position: relative; z-index: 1;
+  padding: 0 8px;
+  opacity: 0; animation: fadeIn 0.5s ease forwards;
+}
+.pipe-step:nth-child(1){animation-delay:0.1s}
+.pipe-step:nth-child(2){animation-delay:0.2s}
+.pipe-step:nth-child(3){animation-delay:0.3s}
+.pipe-step:nth-child(4){animation-delay:0.4s}
+.pipe-step:nth-child(5){animation-delay:0.5s}
+.pipe-step:nth-child(6){animation-delay:0.6s}
+.pipe-step:nth-child(7){animation-delay:0.7s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+.pipe-icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--warm-bg); border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; margin-bottom: 14px;
+  transition: all 0.3s; cursor: default;
+}
+.pipe-step:hover .pipe-icon {
+  background: var(--orange); border-color: var(--orange);
+  transform: scale(1.1);
+  box-shadow: 0 8px 24px rgba(244,82,30,0.3);
+}
+.pipe-num {
+  font-size: 0.7rem; font-weight: 700; color: var(--orange);
+  letter-spacing: 0.06em; margin-bottom: 6px;
+}
+.pipe-label {
+  font-family: 'Syne', sans-serif; font-weight: 700;
+  font-size: 0.78rem; color: var(--dark); margin-bottom: 4px;
+}
+.pipe-sub { font-size: 0.7rem; color: var(--gray); line-height: 1.4; }
+
+/* ── SIGNALS ───────────────────────────────────────── */
+#signals {
+  padding: 100px 5%;
+  background: var(--warm-bg);
+}
+.signals-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  margin-top: 60px;
+}
+.signal-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 32px 28px;
+  transition: all 0.25s;
+}
+.signal-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 48px rgba(244,82,30,0.12);
+  border-color: var(--orange);
+}
+.signal-header {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+}
+.signal-icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  background: var(--light-tint); display: flex; align-items: center;
+  justify-content: center; font-size: 24px;
+}
+.signal-title {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem;
+  color: var(--dark);
+}
+.signal-weight {
+  font-size: 0.75rem; color: var(--orange); font-weight: 600;
+}
+.feature-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.feature-list li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 0.88rem; color: var(--gray); line-height: 1.45;
+}
+.feature-list li::before {
+  content: '→'; color: var(--orange); font-weight: 700;
+  flex-shrink: 0; margin-top: 1px;
+}
+
+/* Score bar */
+.score-bar-wrap { margin-top: 28px; }
+.score-bar-label {
+  display: flex; justify-content: space-between;
+  font-size: 0.75rem; color: var(--gray); margin-bottom: 6px; font-weight: 500;
+}
+.score-bar-track {
+  height: 6px; background: var(--light-tint); border-radius: 3px; overflow: hidden;
+}
+.score-bar-fill {
+  height: 100%; background: var(--orange); border-radius: 3px;
+  transition: width 1.5s ease;
+}
+
+/* ── SCORING ───────────────────────────────────────── */
+#scoring {
+  padding: 100px 5%;
+  background: var(--dark);
+  color: white;
+}
+#scoring .section-title { color: white; }
+#scoring .section-sub { color: rgba(255,255,255,0.55); }
+.formula-box {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius); padding: 40px;
+  margin-top: 60px; display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+  align-items: center; gap: 16px;
+}
+.formula-term {
+  text-align: center; padding: 20px 12px;
+  background: rgba(255,255,255,0.05); border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.formula-val {
+  font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800;
+  color: var(--orange);
+}
+.formula-name { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 4px; letter-spacing: 0.04em; }
+.formula-op {
+  font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800;
+  color: rgba(255,255,255,0.3); text-align: center;
+}
+.weights-table { margin-top: 40px; }
+.weight-row {
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.weight-mode {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.85rem;
+  color: white; min-width: 100px;
+}
+.weight-bars { display: flex; gap: 8px; flex: 1; }
+.weight-bar {
+  height: 8px; border-radius: 4px; position: relative;
+}
+.wb-audio { background: var(--orange); }
+.wb-text  { background: var(--deep); }
+.wb-video { background: rgba(244,82,30,0.4); }
+.weight-legend {
+  display: flex; gap: 16px; margin-top: 16px;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.75rem; color: rgba(255,255,255,0.5);
+}
+.legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+/* ── CLI ───────────────────────────────────────────── */
+#cli {
+  padding: 100px 5%;
+  background: var(--white);
+}
+.cli-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; margin-top: 60px; }
+.terminal {
+  background: #1C1008; border-radius: var(--radius);
+  overflow: hidden; box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+}
+.terminal-bar {
+  background: #2A180C; padding: 14px 18px;
+  display: flex; align-items: center; gap: 8px;
+}
+.terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+.td-r { background: #FF5F57; }
+.td-y { background: #FEBC2E; }
+.td-g { background: #28C840; }
+.terminal-title { font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-left: auto; font-family: monospace; }
+.terminal-body { padding: 24px; font-family: 'Courier New', monospace; font-size: 0.82rem; line-height: 1.9; }
+.t-comment { color: #5A4030; }
+.t-cmd { color: #F4F4F4; }
+.t-flag { color: var(--orange); }
+.t-val { color: #A8E6A3; }
+.t-out { color: #5A9FD4; }
+.t-success { color: #A8E6A3; font-weight: bold; }
+.t-prompt { color: var(--orange); margin-right: 8px; }
+
+.cli-flags { display: flex; flex-direction: column; gap: 14px; }
+.flag-item {
+  background: var(--warm-bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 16px 20px;
+  display: flex; gap: 14px; align-items: flex-start;
+  transition: border-color 0.2s;
+}
+.flag-item:hover { border-color: var(--orange); }
+.flag-code {
+  font-family: monospace; font-size: 0.82rem; font-weight: 700;
+  color: var(--orange); background: var(--light-tint);
+  padding: 3px 8px; border-radius: 6px; white-space: nowrap; flex-shrink: 0;
+}
+.flag-desc { font-size: 0.85rem; color: var(--gray); line-height: 1.45; }
+.flag-options { margin-top: 4px; font-size: 0.75rem; color: var(--gray-light); }
+
+/* ── TECH STACK ────────────────────────────────────── */
+#tech {
+  padding: 80px 5%;
+  background: var(--warm-bg);
+  border-top: 1px solid var(--border);
+}
+.tech-grid {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  margin-top: 40px;
+}
+.tech-badge {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 100px; padding: 10px 18px;
+  font-size: 0.85rem; font-weight: 500; color: var(--dark);
+  transition: all 0.2s;
+}
+.tech-badge:hover {
+  border-color: var(--orange); color: var(--orange);
+  background: var(--light-tint); transform: translateY(-2px);
+}
+.tech-badge .tech-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--orange);
+}
+
+/* ── GITHUB CTA ────────────────────────────────────── */
+#cta {
+  padding: 100px 5%;
+  background: var(--orange);
+  text-align: center;
+}
+#cta h2 {
+  font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800;
+  color: white; margin-bottom: 16px; letter-spacing: -0.02em;
+}
+#cta p {
+  font-size: 1.05rem; color: rgba(255,255,255,0.8);
+  margin-bottom: 40px; max-width: 480px; margin-left: auto; margin-right: auto;
+  font-weight: 300; line-height: 1.6;
+}
+.btn-white {
+  background: white; color: var(--orange);
+  padding: 16px 36px; border-radius: 12px;
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 10px;
+  transition: all 0.2s;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+.btn-white:hover { transform: translateY(-3px); box-shadow: 0 16px 48px rgba(0,0,0,0.2); }
+
+/* ── FOOTER ────────────────────────────────────────── */
+footer {
+  background: var(--dark); color: rgba(255,255,255,0.4);
+  padding: 32px 5%; display: flex;
+  justify-content: space-between; align-items: center;
+  font-size: 0.82rem;
+}
+footer a { color: var(--orange); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* ── Responsive ────────────────────────────────────── */
+@media (max-width: 900px) {
+  .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+  .pipeline { grid-template-columns: repeat(4, 1fr); row-gap: 28px; }
+  .pipeline::before { display: none; }
+  .signals-grid { grid-template-columns: 1fr; }
+  .formula-box { grid-template-columns: 1fr 1fr; row-gap: 16px; }
+  .cli-grid { grid-template-columns: 1fr; }
+  .nav-links { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ─────────────────────────────────────────── -->
+<nav>
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-dot">V</div>
+    Podcast VH
+  </a>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#signals">Signals</a>
+    <a href="#cli">Usage</a>
+    <a href="#tech">Stack</a>
+  </div>
+  <a class="nav-cta" href="https://github.com/SurendraReddy7468/Video-Highlight-AI" target="_blank">
+    View on GitHub →
+  </a>
+</nav>
+
+<!-- ── HERO ────────────────────────────────────────── -->
+<section id="hero">
+  <div class="hero-bg-blob"></div>
+  <div class="hero-bg-blob2"></div>
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-badge">
+        <span></span> AI-Powered · Multimodal
+      </div>
+      <h1 class="hero-title">
+        Repurpose any video<br/>
+        in <em>minutes</em>,<br/>
+        not hours.
+      </h1>
+      <p class="hero-sub">
+        Multimodal AI that analyzes audio, speech, and video frames to automatically find your best moments — then exports platform-ready clips with one command.
+      </p>
+      <div class="hero-btns">
+        <a class="btn-primary" href="https://github.com/SurendraReddy7468/Video-Highlight-AI" target="_blank">
+          ⭐ Star on GitHub
+        </a>
+        <a class="btn-secondary" href="#how">See how it works</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-num">3</div>
+          <div class="stat-label">Output modes</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">7</div>
+          <div class="stat-label">Pipeline stages</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">9</div>
+          <div class="stat-label">AI signals analyzed</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-cards">
+      <div class="mode-card">
+        <div class="mode-icon">✂️</div>
+        <div>
+          <div class="mode-title">Auto Shorts</div>
+          <div class="mode-desc">30–60s vertical 9:16 clips for YouTube Shorts, Reels & TikTok</div>
+        </div>
+      </div>
+      <div class="mode-card">
+        <div class="mode-icon">⭐</div>
+        <div>
+          <div class="mode-title">Highlights</div>
+          <div class="mode-desc">60–180s horizontal 16:9 — best moments in one polished reel</div>
+        </div>
+      </div>
+      <div class="mode-card active">
+        <div class="mode-icon">🎣</div>
+        <div>
+          <div class="mode-title">Intro Hook</div>
+          <div class="mode-desc">25–40s hook clip that makes viewers stay till the end</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ─────────────────────────────────── -->
+<section id="how">
+  <div class="section-inner">
+    <div class="section-tag">Pipeline</div>
+    <h2 class="section-title">7 stages. One command.</h2>
+    <p class="section-sub">
+      Every video goes through the same automated pipeline — from raw input to platform-ready clip, without any manual steps.
+    </p>
+
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="pipe-icon">🎬</div>
+        <div class="pipe-num">01</div>
+        <div class="pipe-label">Video Input</div>
+        <div class="pipe-sub">Local file or YouTube URL</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-icon">🎵</div>
+        <div class="pipe-num">02</div>
+        <div class="pipe-label">Audio Extract</div>
+        <div class="pipe-sub">16kHz mono WAV via moviepy</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-icon">📝</div>
+        <div class="pipe-num">03</div>
+        <div class="pipe-label">Transcription</div>
+        <div class="pipe-sub">Whisper speech-to-text + timestamps</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-icon">✂️</div>
+        <div class="pipe-num">04</div>
+        <div class="pipe-label">Segmentation</div>
+        <div class="pipe-sub">Merge chunks into sentences</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-icon">🔬</div>
+        <div class="pipe-num">05</div>
+        <div class="pipe-label">Analysis</div>
+        <div class="pipe-sub">9 multimodal signals scored</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-icon">🏆</div>
+        <div class="pipe-num">06</div>
+        <div class="pipe-label">Scoring</div>
+        <div class="pipe-sub">Weighted highlight score per segment</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-icon">🚀</div>
+        <div class="pipe-num">07</div>
+        <div class="pipe-label">Export</div>
+        <div class="pipe-sub">Face-aware crop · crossfade · 8000k</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SIGNALS ──────────────────────────────────────── -->
+<section id="signals">
+  <div class="section-inner">
+    <div class="section-tag">Multimodal Analysis</div>
+    <h2 class="section-title">Three domains.<br/>Nine signals.</h2>
+    <p class="section-sub">
+      Unlike simple loudness-based cutters, Podcast VH understands what makes a moment compelling across audio, language, and visual dimensions.
+    </p>
+
+    <div class="signals-grid">
+      <!-- Audio -->
+      <div class="signal-card">
+        <div class="signal-header">
+          <div class="signal-icon">🎙️</div>
+          <div>
+            <div class="signal-title">Audio</div>
+            <div class="signal-weight">45% weight (podcast mode)</div>
+          </div>
+        </div>
+        <ul class="feature-list">
+          <li><strong>Energy</strong> — RMS loudness via librosa. Loud punchy moments score high.</li>
+          <li><strong>Pitch variation</strong> — PYIN F₀ coefficient of variation. Excited speakers = high variation.</li>
+          <li><strong>Pause detection</strong> — Dramatic 0.8s+ silences signal deliberate emphasis.</li>
+        </ul>
+        <div class="score-bar-wrap">
+          <div class="score-bar-label"><span>Signal weight</span><span>45%</span></div>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:45%"></div></div>
+        </div>
+      </div>
+
+      <!-- Text -->
+      <div class="signal-card">
+        <div class="signal-header">
+          <div class="signal-icon">📖</div>
+          <div>
+            <div class="signal-title">Text</div>
+            <div class="signal-weight">45% weight (podcast mode)</div>
+          </div>
+        </div>
+        <ul class="feature-list">
+          <li><strong>Keyword density</strong> — TF-IDF style scoring. Rare meaningful words rank higher.</li>
+          <li><strong>Sentiment</strong> — Lexicon-based. Emotional extremes outscore neutral filler.</li>
+          <li><strong>Hook detection</strong> — Open-loop patterns (questions, pain points) boosted. Solutions penalised.</li>
+        </ul>
+        <div class="score-bar-wrap">
+          <div class="score-bar-label"><span>Signal weight</span><span>45%</span></div>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:45%"></div></div>
+        </div>
+      </div>
+
+      <!-- Video -->
+      <div class="signal-card">
+        <div class="signal-header">
+          <div class="signal-icon">🎥</div>
+          <div>
+            <div class="signal-title">Video</div>
+            <div class="signal-weight">10% weight (podcast mode)</div>
+          </div>
+        </div>
+        <ul class="feature-list">
+          <li><strong>Scene changes</strong> — OpenCV frame diff detects camera cuts. More cuts = more dynamic.</li>
+          <li><strong>Face detection</strong> — Haar cascade checks speaker presence per sampled frame.</li>
+          <li><strong>Face position</strong> — Median center_x used for intelligent 9:16 crop alignment.</li>
+        </ul>
+        <div class="score-bar-wrap">
+          <div class="score-bar-label"><span>Signal weight</span><span>10%</span></div>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:10%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SCORING FORMULA ──────────────────────────────── -->
+<section id="scoring">
+  <div class="section-inner">
+    <div class="section-tag" style="color:rgba(244,82,30,0.8)">Scoring Engine</div>
+    <h2 class="section-title">Weighted multimodal score</h2>
+    <p class="section-sub">Every segment gets a final score from 0–1 combining all three signal domains with mode-specific weights.</p>
+
+    <div class="formula-box">
+      <div class="formula-term">
+        <div class="formula-val">Score</div>
+        <div class="formula-name">FINAL</div>
+      </div>
+      <div class="formula-op">=</div>
+      <div class="formula-term">
+        <div class="formula-val">w<sub style="font-size:1rem">a</sub></div>
+        <div class="formula-name">Audio weight</div>
+      </div>
+      <div class="formula-op">+</div>
+      <div class="formula-term">
+        <div class="formula-val">w<sub style="font-size:1rem">t</sub></div>
+        <div class="formula-name">Text weight</div>
+      </div>
+      <div class="formula-op">+</div>
+      <div class="formula-term">
+        <div class="formula-val">w<sub style="font-size:1rem">v</sub></div>
+        <div class="formula-name">Video weight</div>
+      </div>
+    </div>
+
+    <div class="weights-table" style="margin-top:40px">
+      <div class="weight-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> Audio</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--deep)"></div> Text</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(244,82,30,0.35)"></div> Video</div>
+      </div>
+      <div class="weight-row">
+        <div class="weight-mode">Podcast</div>
+        <div class="weight-bars">
+          <div class="weight-bar wb-audio" style="width:45%"></div>
+          <div class="weight-bar wb-text"  style="width:45%"></div>
+          <div class="weight-bar wb-video" style="width:10%"></div>
+        </div>
+        <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);min-width:120px">45 · 45 · 10</div>
+      </div>
+      <div class="weight-row">
+        <div class="weight-mode">Normal video</div>
+        <div class="weight-bars">
+          <div class="weight-bar wb-audio" style="width:30%"></div>
+          <div class="weight-bar wb-text"  style="width:30%"></div>
+          <div class="weight-bar wb-video" style="width:40%"></div>
+        </div>
+        <div style="font-size:0.75rem;color:rgba(255,255,255,0.4);min-width:120px">30 · 30 · 40</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CLI ─────────────────────────────────────────── -->
+<section id="cli">
+  <div class="section-inner">
+    <div class="section-tag">Usage</div>
+    <h2 class="section-title">One command.<br/>Any video.</h2>
+    <p class="section-sub">Drop any local file or YouTube URL. The pipeline handles everything — no configuration needed.</p>
+
+    <div class="cli-grid">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot td-r"></div>
+          <div class="terminal-dot td-y"></div>
+          <div class="terminal-dot td-g"></div>
+          <div class="terminal-title">PowerShell — Podcast_VH</div>
+        </div>
+        <div class="terminal-body">
+<span class="t-comment"># Generate a 30-60s vertical Short</span><br/>
+<span class="t-prompt">$</span><span class="t-cmd">python main.py</span> <span class="t-flag">--input</span> <span class="t-val">"podcast.mp4"</span> <span class="t-flag">--mode</span> <span class="t-val">shorts</span><br/><br/>
+<span class="t-comment"># Generate a 1-3 min highlight reel</span><br/>
+<span class="t-prompt">$</span><span class="t-cmd">python main.py</span> <span class="t-flag">--input</span> <span class="t-val">"podcast.mp4"</span> <span class="t-flag">--mode</span> <span class="t-val">highlights</span><br/><br/>
+<span class="t-comment"># Generate a 25-40s intro hook</span><br/>
+<span class="t-prompt">$</span><span class="t-cmd">python main.py</span> <span class="t-flag">--input</span> <span class="t-val">"podcast.mp4"</span> <span class="t-flag">--mode</span> <span class="t-val">intro</span><br/><br/>
+<span class="t-comment"># From YouTube directly</span><br/>
+<span class="t-prompt">$</span><span class="t-cmd">python main.py</span> <span class="t-flag">--input</span> <span class="t-val">"https://youtube.com/watch?v=XXX"</span> <span class="t-flag">--mode</span> <span class="t-val">shorts</span><br/><br/>
+<span class="t-out">── STEP 1/7  Load Video ──────────────────</span><br/>
+<span class="t-out">── STEP 2/7  Extract Audio ───────────────</span><br/>
+<span class="t-out">── STEP 3/7  Transcribe (Whisper base) ───</span><br/>
+<span class="t-out">── STEP 4/7  Merge Segments ──────────────</span><br/>
+<span class="t-out">── STEP 5/7  Score 25 segments ───────────</span><br/>
+<span class="t-out">── STEP 6/7  Generate Clip ───────────────</span><br/>
+<span class="t-out">── STEP 7/7  Convert Format (9:16) ───────</span><br/>
+<span class="t-success">✅  Output → data/outputs/shorts/podcast_shorts_1777xxx.mp4</span>
+        </div>
+      </div>
+
+      <div class="cli-flags">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--dark);margin-bottom:8px">
+          All flags
+        </div>
+        <div class="flag-item">
+          <div class="flag-code">--input</div>
+          <div>
+            <div class="flag-desc">Local .mp4 path or any YouTube URL</div>
+            <div class="flag-options">Required</div>
+          </div>
+        </div>
+        <div class="flag-item">
+          <div class="flag-code">--mode</div>
+          <div>
+            <div class="flag-desc">Output format and selection strategy</div>
+            <div class="flag-options">shorts · highlights · intro</div>
+          </div>
+        </div>
+        <div class="flag-item">
+          <div class="flag-code">--type</div>
+          <div>
+            <div class="flag-desc">Scoring weight preset</div>
+            <div class="flag-options">podcast (default) · normal</div>
+          </div>
+        </div>
+        <div class="flag-item">
+          <div class="flag-code">--whisper</div>
+          <div>
+            <div class="flag-desc">Transcription accuracy vs speed</div>
+            <div class="flag-options">tiny · base · small · medium · large</div>
+          </div>
+        </div>
+        <div class="flag-item">
+          <div class="flag-code">--output</div>
+          <div>
+            <div class="flag-desc">Custom filename (without extension)</div>
+            <div class="flag-options">Default: auto-generated with timestamp</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TECH STACK ───────────────────────────────────── -->
+<section id="tech">
+  <div class="section-inner">
+    <div class="section-tag">Tech Stack</div>
+    <h2 class="section-title">Built on proven tools</h2>
+    <p class="section-sub">Runs entirely on CPU. No cloud APIs required for core processing.</p>
+    <div class="tech-grid">
+      <div class="tech-badge"><div class="tech-dot"></div>OpenAI Whisper</div>
+      <div class="tech-badge"><div class="tech-dot"></div>librosa</div>
+      <div class="tech-badge"><div class="tech-dot"></div>OpenCV</div>
+      <div class="tech-badge"><div class="tech-dot"></div>moviepy 1.0.3</div>
+      <div class="tech-badge"><div class="tech-dot"></div>PyTorch</div>
+      <div class="tech-badge"><div class="tech-dot"></div>yt-dlp</div>
+      <div class="tech-badge"><div class="tech-dot"></div>FFmpeg</div>
+      <div class="tech-badge"><div class="tech-dot"></div>NumPy</div>
+      <div class="tech-badge"><div class="tech-dot"></div>scikit-learn</div>
+      <div class="tech-badge"><div class="tech-dot"></div>Python 3.10</div>
+      <div class="tech-badge"><div class="tech-dot"></div>Conda</div>
+      <div class="tech-badge"><div class="tech-dot"></div>PYIN Algorithm</div>
+      <div class="tech-badge"><div class="tech-dot"></div>Haar Cascade</div>
+      <div class="tech-badge"><div class="tech-dot"></div>TF-IDF Scoring</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ─────────────────────────────────────────── -->
+<section id="cta">
+  <h2>Try it on your video</h2>
+  <p>Open source. Runs locally. No subscription. Clone the repo and process your first video in under 5 minutes.</p>
+  <a class="btn-white" href="https://github.com/SurendraReddy7468/Video-Highlight-AI" target="_blank">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+    </svg>
+    View on GitHub
+  </a>
+</section>
+
+<!-- ── FOOTER ───────────────────────────────────────── -->
+<footer>
+  <div>Podcast VH — AI Video Highlight Generator · Mini Project</div>
+  <div>Built by <a href="https://github.com/SurendraReddy7468" target="_blank">Surendra Reddy</a> · <a href="https://github.com/SurendraReddy7468/Video-Highlight-AI" target="_blank">GitHub</a></div>
+</footer>
+
+<script>
+// Animate score bars when they scroll into view
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.querySelectorAll('.score-bar-fill').forEach(bar => {
+        bar.style.width = bar.style.width; // trigger reflow
+      });
+    }
+  });
+}, { threshold: 0.3 });
+document.querySelectorAll('.signal-card').forEach(c => observer.observe(c));
+
+// Smooth active card rotation in hero
+const cards = document.querySelectorAll('.mode-card');
+let current = 2;
+setInterval(() => {
+  cards[current].classList.remove('active');
+  current = (current + 1) % cards.length;
+  cards[current].classList.add('active');
+}, 2800);
+</script>
+</body>
+</html>
