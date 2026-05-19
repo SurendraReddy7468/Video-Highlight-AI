@@ -100,7 +100,7 @@ def generate_clip(
     final.close()
 
     print(f"[ClipGen] ✅ Done: {output_path}  ({total_secs:.1f}s)")
-    return output_path
+    return output_path, selected
 
 def generate_intro_clip(
     video_path: str,

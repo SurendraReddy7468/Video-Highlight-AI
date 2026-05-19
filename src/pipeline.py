@@ -82,9 +82,8 @@ def run_pipeline(
         print(f"\n{'='*55}\n  🎉 DONE!\n  Output → {raw_clip}\n{'='*55}\n")
         return raw_clip
 
-    raw_clip = generate_clip(
-        video_path,
-        scored,
+    raw_clip, selected_segments = generate_clip(
+        video_path, scored,
         mode=mode,
         output_name="raw_clip",
     )
@@ -94,8 +93,24 @@ def run_pipeline(
     final_path = os.path.join(out_dir, f"{base_name}_{mode}_{timestamp}.mp4")
 
     if mode == "shorts":
-        face_x     = scored[0].get("face_center_x", 0.5)
-        final_path = convert_to_vertical(raw_clip, final_path, face_center_x=face_x)
+        # Build per-segment face positions using actual selected segments
+        # These timestamps are relative to the joined raw_clip (start from 0)
+        per_segment_faces = []
+        running = 0.0
+        for seg in selected_segments:
+            dur    = seg["end"] - seg["start"]
+            face_x = seg.get("face_center_x", 0.5)
+            per_segment_faces.append((running, running + dur, face_x))
+            running += dur
+
+        print(f"[Pipeline] 👤 Per-segment face positions:")
+        for s, e, fx in per_segment_faces:
+            print(f"           [{s:.1f}s-{e:.1f}s] face_x={fx:.3f}")
+
+        final_path = convert_to_vertical(
+            raw_clip, final_path,
+            per_segment_faces=per_segment_faces
+        )
     else:
         final_path = convert_to_horizontal(raw_clip, final_path)
 
